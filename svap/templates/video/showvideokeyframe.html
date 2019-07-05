@@ -1,0 +1,218 @@
+{% extends 'video/base.html' %}
+{% load static %}
+{% block headblock %}
+    <style>
+    * {
+        margin: 0;
+        padding: 0;
+    }
+    .wrap h3 {
+        text-align: center;
+        height: 100px;
+        line-height: 100px;
+    }
+    .player {
+        width: 720px;
+        height: 400px;
+        margin: 0 auto;
+        position: absolute;
+    }
+    .player video {
+        position: absolute;
+        height: 100%;
+    }
+
+    .player .control {
+        position: absolute;
+        background: #438eb9;
+        width: 720px;
+        height: 40px;
+        border-radius: 5px;
+        left: 50%;
+        bottom: -40px;
+        transform: translateX(-50%);
+    }
+    .player .control div {
+        display: inline-block;
+        line-height: 40px;
+        margin-left: 10px;
+        font-size: 18px;
+        color: #fff;
+    }
+    .player .control div:nth-child(1) {
+        width: 520px;
+        height: 10px;
+        background-color: rgba(255, 255, 255, 0.3);
+        border-ra00dius: 5px;
+        overflow: hidden;
+    }
+    .player .control .progress {
+        display: block;
+        width: 0;
+        height: 10px;
+        background: #fff;
+    }
+    .player .control .timer {
+        font-size: 12px;
+    }
+    .activate{
+        background-color: #00be67;
+    }
+</style>
+{% endblock %}
+{% block breadcrub %}
+    <li>
+        <a href="javascript:void(0)">视频页面</a>
+    </li>
+{% endblock %}
+{% block bodyblock %}
+    <div class="row">
+        <h3>视频名字：{{ video_name }}</h3>
+        <h3>视频格式：{{ video_format }}</h3>
+        <h3>视频大小：{{ size }}</h3>
+        <h3>视频时长：{{ video_length }}</h3>
+    </div>
+    <div class="row" >
+        <ul class="ace-thumbnails" id="datafaceurl" >
+            {% for face in face_list %}
+                <li>
+                    <a href="{{ face }}" title="Photo Title" data-rel="colorbox" target="_blank">
+                        <img alt="200x200" src="{{ face }}" width="200px" height="200px"/>
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endblock %}
+{% block scriptblock %}
+<script>
+{#var famous_name_list = {{ famous_name_str | safe }}#}
+{#var famous_img_dict = {{ famous_img_dict | safe }}#}
+{#console.log(famous_point_dict)#}
+{#$(function () {#}
+{#    for(var i=0; i<famous_name_list.length; i++){#}
+{#        var famousname = famous_name_list[i]#}
+{#        var bottom = -50*(i+1) + 'px';#}
+{#        $('#control_'+ i).css('bottom',bottom);#}
+{#        //注册事件#}
+{##}
+{##}
+{#        var face_list = famous_img_dict[famousname]#}
+{#        var famoustab_ = $('#famoustab_'+i)[0];#}
+{#        var data = ''#}
+{#        for (var j = 0; j < face_list.length; j++) {#}
+{#            var url = face_list[j];#}
+{#            data = data + '<li><a href="'+url+'" title="Photo Title" data-rel="colorbox" target="_blank"><img alt="150x150" src="'+url+'" width="150px" height="150px"/></a></li>'#}
+{#        }#}
+{#        if(face_list.length>0){#}
+{#          famoustab_.innerHTML = '<ul class="ace-thumbnails" id=pageMain'+i+'>'+data+'</ul> <div id="pageBox'+i+'"> <span id="prev'+i+'" style="position: absolute;top: 550px;left:250px;font-size:16px">上一页</span><ul id="pageNav'+i+'" style="position: absolute;top: 550px;left:410px;font-size:16px"></ul><span id="next'+i+'" style="position: absolute;top: 550px;left:600px;font-size:16px">下一页</span> </div>'#}
+{#        }#}
+{#    }#}
+{#    $('#famoustab_0').addClass('active')#}
+{#})#}
+{##}
+{#$(function () {#}
+{#    for(var i=0; i<famous_name_list.length; i++){#}
+{#        tabPage({#}
+{#            pageMain: '#pageMain'+i,#}
+{#            pageNav: '#pageNav'+i,#}
+{#            pagePrev: '#prev'+i,#}
+{#            pageNext: '#next'+i,#}
+{#            curNum: 15, /*每页显示的条数*/#}
+{#            activeClass: 'activate', /*高亮显示的class*/#}
+{#            ini: 0/*初始化显示的页面*/#}
+{#        });#}
+{#        function tabPage(tabPage) {#}
+{#            var pageMain = $(tabPage.pageMain);#}
+{#            /*获取内容列表*/#}
+{#            var pageNav = $(tabPage.pageNav);#}
+{#            /*获取分页*/#}
+{#            var pagePrev = $(tabPage.pagePrev);#}
+{#            /*上一页*/#}
+{#            var pageNext = $(tabPage.pageNext);#}
+{#            /*下一页*/#}
+{##}
+{##}
+{#            var curNum = tabPage.curNum;#}
+{#            /*每页显示数*/#}
+{#            var len = Math.ceil(pageMain.find("li").length / curNum);#}
+{#            /*计算总页数*/#}
+{#            var pageList = '';#}
+{#            /*生成页码*/#}
+{#            var iNum = 0;#}
+{#            /*当前的索引值*/#}
+{##}
+{#            pageList = '<a href="javascript:;" style="color:black" >' + 1 + '</a>--<span href="javascript:;" style="color:black" >' + 1 + '</span>--<a href="javascript:;" style="color:black" >' + len + '</a>'#}
+{#            //pageList = '<a href="javascript:;" style="color:black" >' + 1 + '</a>/<a href="javascript:;" style="color:black" >' + len + '</a>'#}
+{#            pageNav.html(pageList);#}
+{##}
+{#            /*******标签页的点击事件*******/#}
+{#            pageNav.find("a").each(function(){#}
+{#                    var page = $(this).text()#}
+{##}
+{#                    $(this).click(function () {#}
+{#                        //pageNav.children().eq(0)[0].innerHTML = page#}
+{#                        pageNav.children().eq(1)[0].innerHTML = page#}
+{#                        iNum = page - 1#}
+{#                        $(pageMain).find("li").hide();#}
+{#                        for (var i = ($(this).html() - 1) * curNum; i < ($(this).html()) * curNum; i++) {#}
+{#                            $(pageMain).find("li").eq(i).show()#}
+{##}
+{#                        }#}
+{#                    });#}
+{#            })#}
+{##}
+{##}
+{#            $(pageMain).find("li").hide();#}
+{#            /************首页的显示*********/#}
+{#            for (var i = 0; i < curNum; i++) {#}
+{#                $(pageMain).find("li").eq(i).show()#}
+{#            }#}
+{##}
+{##}
+{#            /*下一页*/#}
+{#            pageNext.click(function () {#}
+{#                $(pageMain).find("li").hide();#}
+{#                if (iNum == len - 1) {#}
+{#                    alert('已经是最后一页');#}
+{#                    for (var i = (len - 1) * curNum; i < len * curNum; i++) {#}
+{#                        $(pageMain).find("li").eq(i).show()#}
+{#                    }#}
+{#                    return false;#}
+{#                } else {#}
+{#                    iNum++;#}
+{#                    //pageNav.children().eq(0)[0].innerHTML = (iNum+1)#}
+{#                    pageNav.children().eq(1)[0].innerHTML = (iNum+1)#}
+{#                }#}
+{#                for (var i = iNum * curNum; i < (iNum + 1) * curNum; i++) {#}
+{#                    $(pageMain).find("li").eq(i).show()#}
+{#                }#}
+{#            });#}
+{#            /*上一页*/#}
+{#            pagePrev.click(function () {#}
+{#                $(pageMain).find("li").hide();#}
+{#                if (iNum == 0) {#}
+{#                    alert('当前是第一页');#}
+{#                    for (var i = 0; i < curNum; i++) {#}
+{#                        $(pageMain).find("li").eq(i).show()#}
+{#                    }#}
+{#                    return false;#}
+{#                } else {#}
+{#                    iNum--;#}
+{#                    //pageNav.children().eq(0)[0].innerHTML = (iNum+1)#}
+{#                    pageNav.children().eq(1)[0].innerHTML = (iNum+1)#}
+{#                }#}
+{#                for (var i = iNum * curNum; i < (iNum + 1) * curNum; i++) {#}
+{#                    $(pageMain).find("li").eq(i).show()#}
+{#                }#}
+{#            })#}
+{##}
+{#        }#}
+{#    }#}
+{##}
+{##}
+{##}
+{#    })#}
+
+</script>
+{% endblock %}

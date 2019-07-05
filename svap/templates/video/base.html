@@ -1,0 +1,188 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+		<meta charset="utf-8" />
+		<title>视频管理平台</title>
+		<meta name="description" content="This is page-header (.page-header &gt; h1)" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+		<link rel="stylesheet" href="{% static '/video/css/bootstrap.min.css' %}" />
+		<link rel="stylesheet" href="{% static '/video/css/font-awesome.min.css' %}" />
+		<link rel="stylesheet" href="{% static '/video/css/ace.min.css' %}" id="main-ace-style" />
+		<link rel="stylesheet" href="{% static '/video/css/ace-skins.min.css' %}"  />
+		<link rel="stylesheet" href="{% static '/video/css/ace-rtl.min.css' %}" />
+        {% block headblock %}
+        {% endblock %}
+	</head>
+
+	<body class="no-skin" style="overflow: auto;min-width: 1920px;background-color: white">
+		<div id="navbar" class="navbar navbar-default">
+			<div class="navbar-container" id="navbar-container">
+
+				<button type="button" class="navbar-toggle menu-toggler pull-left" id="menu-toggler">
+					<span class="sr-only">Toggle sidebar</span>
+
+					<span class="icon-bar"></span>
+
+					<span class="icon-bar"></span>
+
+					<span class="icon-bar"></span>
+				</button>
+
+				<div class="navbar-header pull-left">
+					<a href="base.html" class="navbar-brand">
+						<small>
+							<img src="{% static '/video/images/logo.png' %}" alt="" />
+						</small>
+					</a>
+				</div>
+
+				<div class="navbar-buttons navbar-header pull-right" role="navigation">
+					<ul class="nav ace-nav">
+
+
+						<li class="light-blue">
+							<a data-toggle="dropdown" href="#" class="dropdown-toggle">
+								<img class="nav-user-photo" src="{% static 'video/images/user.jpg' %}" alt="Jason's Photo" />
+								<span class="user-info">
+									欢迎您<br />
+									易宗贵
+								</span>
+
+								<i class="ace-icon fa fa-caret-down"></i>
+							</a>
+
+							<ul class="user-menu dropdown-menu-right dropdown-menu dropdown-yellow dropdown-caret dropdown-close">
+								<li>
+									<a href="#">
+										<i class="ace-icon fa fa-cog"></i>
+										修改密码
+									</a>
+								</li>
+								<li>
+									<a href="#">
+										<i class="ace-icon fa fa-power-off"></i>
+										登出
+									</a>
+								</li>
+							</ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+
+		</div>
+
+		<div class="main-container" id="main-container" >
+			<div id="sidebar" class="sidebar responsive">
+				<ul class="nav nav-list">
+					<li class="active">
+						<a href="">
+							<i class="menu-icon fa fa-tachometer"></i>
+							<span class="menu-text"> 总控制台 </span>
+						</a>
+
+						<b class="arrow"></b>
+					</li>
+
+					<li class="">
+						<a href="/video/home">
+							<i class="menu-icon fa fa-desktop"></i>
+							<span class="menu-text"> 统计信息 </span>
+						</a>
+					</li>
+
+					<li class="">
+						<a href="/video/videoadmin">
+							<i class="menu-icon fa fa-list"></i>
+							<span class="menu-text"> 视频管理 </span>
+						</a>
+					</li>
+
+					<li class="">
+						<a href="/video/targetmag">
+							<i class="menu-icon fa fa-pencil-square-o"></i>
+							<span class="menu-text"> 目标管理 </span>
+						</a>
+					</li>
+
+					<li class="">
+{#						<a href="#" class="dropdown-toggle">#}
+						<a href="/video/targetrec" >
+							<i class="menu-icon fa fa-tag"></i>
+							<span class="menu-text"> 目标识别 </span>
+{#							<b class="arrow fa fa-angle-down"></b>#}
+						</a>
+
+{#						<b class="arrow"></b>#}
+{##}
+{#						<ul class="submenu">#}
+{#                            <li class="">#}
+{#								<a href="targetrec">#}
+{#									<i class="menu-icon fa fa-caret-right"></i>#}
+{#									目标识别#}
+{#								</a>#}
+{##}
+{#								<b class="arrow"></b>#}
+{#							</li>#}
+{##}
+{#							<li class="">#}
+{#								<a href="newtask">#}
+{#									<i class="menu-icon fa fa-caret-right"></i>#}
+{#									新增识别任务#}
+{#								</a>#}
+{##}
+{#								<b class="arrow"></b>#}
+{#							</li>#}
+{##}
+{#						</ul>#}
+					</li>
+				</ul>
+			</div>
+			<div class="main-content">
+				<div class="breadcrumbs" id="breadcrumbs">
+					<ul class="breadcrumb">
+						<li>
+							<i class="ace-icon fa fa-home home-icon"></i>
+							<a href="home">首页</a>
+						</li>
+                        {% block breadcrub %}
+                        {% endblock %}
+					</ul>
+
+					<div class="nav-search" id="nav-search">
+						<form class="form-search">
+							<span class="input-icon">
+								<input type="text" placeholder="请输入关键字 ..." class="nav-search-input" id="nav-search-input" autocomplete="off" />
+								<i class="ace-icon fa fa-search nav-search-icon"></i>
+							</span>
+						</form>
+					</div>
+				</div>
+				<div class="page-content">
+					<div class="page-content-area">
+                           {% block bodyblock %}
+                            {% endblock %}
+					</div>
+				</div>
+			</div>
+
+		</div>
+
+
+
+		<script type="text/javascript">
+			if('ontouchstart' in document.documentElement) document.write("<script src='/video/js/jquery.mobile.custom.min.js'>"+"<"+"/script>");
+		</script>
+        <script src="{% static '/video/js/jquery.min.js' %}"></script>
+		<script src="{% static '/video/js/bootstrap.min.js' %}"></script>
+		<script src="{% static '/video/js/jquery-ui.custom.min.js' %}"></script>
+		<script src="{% static '/video/js/jquery.ui.touch-punch.min.js' %}"></script>
+        <script src="{% static '/video/js/ace.min.js' %}"></script>
+        <script src="{% static '/video/js/ace-elements.min.js' %}"></script>
+        <script type="text/javascript" src="{% static '/video/js/echarts.min.js' %}"></script>
+        {% block scriptblock %}
+        {% endblock %}
+	</body>
+</html>

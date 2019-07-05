@@ -1,0 +1,670 @@
+{% extends 'video/base.html' %}
+{% load static %}
+{% block headblock %}
+    <link rel="stylesheet" href="{% static '/video/css/ace-fonts.css' %}" />
+    <link rel="stylesheet" href="{% static '/video/css/theme.css' %}" />
+    <script src="{% static '/video/js/jquery-3.1.1.min.js' %}"></script>
+    		<style type="text/css">
+			.CSSearchTbl{ border:1px #008CD4 solid;}
+			.CSSearchTbl thead{}
+			.CSSearchTbl thead tr{}
+			.CSSearchTbl thead tr th{  text-align:left; padding-left:10px;}
+			.CSSearchTbl tbody{}
+			.CSSearchTbl tbody tr{}
+			.CSSearchTbl tbody tr td{  padding: 10px;}
+			.CSSearchTbl tbody tr td.right{ text-align: left;}
+			.CSSearchTbl tbody tr td.left{ text-align: right;}
+			.table-responsive{ display: none;}
+            .tbl-search{
+                width: 80px;margin: 10px 20px 10px 20px;padding: 9px 8px
+            }
+            .tbl-search1{
+                width: 200px;left:20px;height: 45px;position: absolute;top:80px
+            }
+            .img-div{
+            border: 1px solid #ddd;
+            height:100px;
+            float: left;
+            line-height: 1;
+            margin-left: 5px;
+            overflow: hidden;
+        }
+
+		</style>
+{% endblock %}
+<!DOCTYPE html>
+<html lang="en">
+	<body class="no-skin">
+            {% block breadcrub %}
+                <li>
+                    <a href="javascript:void(0)">目标管理</a>
+                </li>
+            {% endblock %}
+{% block bodyblock %}
+        <div class="page-content" >
+            <div class="col-xs-3" style="border: 0.5px #008CD4 solid;height: 820px;text-align: center" id="leftcontent">
+                <h3 style="margin-top: 10px;font-size: 20px">目标库管理</h3>
+                <div class="col-xs-12" style="border: 0.5px #008CD4 solid;height: 150px;margin-top: 10px">
+                <div class="row" >
+                    <button class="btn btn-primary pull-left col-sm-12 tbl-search" data-dismiss="modal" onclick="newfamous()" style="width: 200px">
+                        <span>新增</span>
+                    </button>
+                </div>
+                <div>
+                    <input class="tbl-search1" id="search" onkeyup="search()">
+                </div>
+                </div>
+                <div class="content_left" style="position: absolute">
+                <div class="left_nav">
+                <ul>
+                    <li>
+                        <div class="t"><i></i><a href="#">娱乐明星</a></div>
+                        <div class="txt" id="f-fmaous" style="overflow: auto;height: 400px">
+                            {% for famous in famous_list %}
+                                <p><a data-famousid="{{ famous.id }}">{{ famous.name }}</a></p>
+                            {% endfor %}
+                        </div>
+                    </li>
+                </ul>
+                <ul>
+                    <li>
+                        <div class="t"><i></i><a href="#">政治人物</a></div>
+                        <div class="txt" id="f-politics" style="overflow: auto;height: 400px">
+                            {% for politics in politics_list %}
+                                <p><a data-famousid="{{ politics.id }}">{{ politics.name }}</a></p>
+                            {% endfor %}
+                        </div>
+                    </li>
+                </ul>
+                </div>
+                </div>
+			</div>
+            <div class="col-xs-9" style="border: 0.5px #008CD4 solid;height: 820px;text-align: center" id="rightcontent">
+
+                <div class="row"  id="new" style="display: none">
+                    <table width="100%" class="CSSearchTbl" cellpadding="0" cellspacing="0">
+                    <button class="col-sm-12" style="width: 160px;margin: 10px 20px 10px 10px;padding: 9px 8px;background-color: #008CD4;color: white" onclick="firstupdata()">
+                        <span>新增模型</span>
+                    </button>
+                    <div class="col-sm-12" style="font-size: 24px;width: 200px;margin: 10px 20px 10px 20px;padding: 9px 8px;line-height: 24px" id="fname" data-famous="{{ famous_id }}" >
+                    </div>
+                    </table>
+                    <div style="border-top: 0.5px #008CD4 solid;width: 100%;">
+                    <form id="form"  enctype="multipart/form-data" method='POST' style="margin-top: 20px">
+                        <p style="width: 500px;margin-left: -20px">
+                            <label style="font-size: 20px">请输入名字:</label>
+                            <input type="text" id="famouname"  name="famouname" onchange="showfamousname(this)" />
+                            <label><input type="radio" name="classification" value="1" >娱乐明星</label>
+		                    <label><input type="radio" name="classification" value="2">政治人物</label>
+                        </p>
+                        <input type="file" id="xdaTanFileImg"  multiple="multiple"  name="file" onchange="firstUploadImg(this)" style="margin-left: 20px;margin-top: 20px"/>
+                        <div class="img-box" id="firstimgboxid">
+                        </div>
+                        <div  id="firstbt" style="display: none">
+                            <input type="button"  value="提交" style="width: 50px;height: 50px;" onclick="firstshowface()" />
+                        </div>
+                    </form>
+                    <div id="firstinsert" style="margin-top: 80px"></div>
+                </div>
+                </div>
+            <div style="height: 240px;width: 100%;display: block" id="showfmaous" >
+                    <div style="border-bottom: 0.5px #008CD4 solid;height: 70px;width: 100%;" >
+                    <button class="btn btn-primary pull-left col-sm-12 tbl-search" data-dismiss="modal"  onclick="delfamous()">
+                        <span>删除</span>
+                    </button>
+                    <button class="btn btn-primary pull-left col-sm-12 tbl-search" data-dismiss="modal" onclick="changefamous()">
+                        <span>修改</span>
+                    </button>
+                    </div>
+                    <div class="row" >
+                    <table width="100%" class="CSSearchTbl" cellpadding="0" cellspacing="0">
+                    <div class="col-sm-12" style="font-size: 24px;width: 200px;margin: 10px 20px 10px 20px;padding: 9px 8px;line-height: 24px" id="datafamousname">
+                        <h1 id="famous" data-famous="{{ famous_id }}">{{ famous_name }}</h1>
+                    </div>
+                    <div class="col-sm-12"  style="width: 250px;margin: 10px 20px 10px 200px;padding: 9px 8px;font-size: 16px" id="datafacelength">
+                        <span>目标特征图片<span style="font-size: 24px">{{ face_length }}</span>张</span>
+                    </div>
+                    <button class="col-sm-12" style="width: 160px;margin: 10px 20px 10px 300px;padding: 9px 8px;background-color: #008CD4;color: white" onclick="updata()">
+                        <span>更新模型</span>
+                    </button>
+                    </table>
+                    </div>
+                    <div class="row" id="famousdata">
+                        {% if  p_type == 1 %}
+                            <div class="col-sm-12" style="font-size: 16px;line-height: 24px;text-align: left">
+                            <span style="font-size: 20px;line-height: 24px;margin-left: 20px">作品</span>：<input value="{{ works }}" style="display: none;width: 600px" id="in-work"><span style="font-size: 16px;line-height: 24px;" id="s-work">{{ works }}</span>
+                            </div>
+                            <div class="col-sm-12"  style="font-size: 16px;line-height: 24px;text-align: left">
+                                <span style="font-size: 20px;line-height: 24px;margin-left: 20px">大学</span>：<input value="{{ university }}" style="display: none;" id="in-university"><span style="font-size: 16px;line-height: 24px;" id="s-university">{{ university }}</span>
+                                <span style="font-size: 20px;line-height: 24px;margin-left: 20px">出生地</span>：<input value="{{ birthplace }}" style="display: none;" id="in-birthplace"><span style="font-size: 16px;line-height: 24px;" id="s-birthplace">{{ birthplace }}</span>
+                                <span style="font-size: 20px;line-height: 24px;margin-left: 20px">出生日期</span>：<input value="{{ birthday }}" style="display: none;" id="in-birthday"><span style="font-size: 16px;line-height: 24px;" id="s-birthplace">{{ birthday }}</span>
+                                <span style="font-size: 20px;line-height: 24px;margin-left: 20px">身高</span>：<input value="{{ height }}" style="display: none;" id="in-height"><span style="font-size: 16px;line-height: 24px;" id="s-height">{{ height }}</span>
+                            </div>
+                            <div class="col-sm-12" style="font-size: 16px;line-height: 24px;text-align: left" id="datafamousupdatatime">
+                                <span style="font-size: 20px;line-height: 24px;margin-left: 20px">更新时间</span>：<span style="font-size: 16px;line-height: 24px">{{ famous_updata_time }}</span>
+                            </div>
+                        {% elif p_type == 2 %}
+                            <div class="col-sm-12" style="font-size: 16px;line-height: 24px;text-align: left">
+                            <span style="font-size: 20px;line-height: 24px;margin-left: 20px">简介</span>：<input value="{{ works }}" style="display: none;width: 600px" id="in-work"><span style="font-size: 16px;line-height: 24px;" id="s-work">{{ works }}</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="row" style="margin-top: 30px">
+                        <ul id="myTab" class="nav nav-tabs" role="tablist">
+                            <li role="presentation" class="active"><a href="#home" aria-controls="显示头像" role="tab" data-toggle="tab" style="background-color: #428bca;color: black">显示头像</a></li>
+                            <li role="presentation" ><a href="#del" aria-controls="删除头像" role="tab" data-toggle="tab" style="background-color: #428bca;color: black">删除头像</a></li>
+                            <li role="presentation"><a href="#insert" aria-controls="新增头像" role="tab" data-toggle="tab" style="background-color: #428bca;color: black">新增头像</a></li>
+                        </ul>
+                        <div class="tab-content" style="border: 0" >
+                            <div role="tabpanel" class="tab-pane active" id="home">
+                                <ul class="ace-thumbnails" id="datafaceurl" data-totalpage="{{ total_page }}">
+                                    {% for face in face_list %}
+                                        <li>
+                                            <a href="{{ face.url }}" title="Photo Title" data-rel="colorbox" target="_blank">
+                                                <img alt="150x150" src="{{ face.url }}" width="150px" height="150px"/>
+                                            </a>
+                                        </li>
+                                    {% endfor %}
+                                    {% if face_list %}
+                                    <div onclick="homeprevious({{ page }})" style="position: absolute;top: 500px;left:500px"><a>上一页</a></div>
+                                        <div style="position: absolute;top: 500px;left:560px">{{ page }}/{{ total_page }}</div>
+                                    <div onclick="homenext({{ page }}, {{ total_page }})" style="position: absolute;top: 500px;left:600px"><a>下一页</a></div>
+                                    {% endif %}
+                                </ul>
+
+                            </div>
+                            <div role="tabpanel" class="tab-pane" id="del">
+                                <ul class="ace-thumbnails" id="delfaceurl">
+                                    {% for face in face_list %}
+                                        <li class="img-li">
+                                            <a title="Photo Title" data-rel="colorbox">
+                                                <img alt="150x150" src="{{ face.url }}" width="150px" height="150px"/>
+                                            </a>
+                                            <div class="checkbox" style="position:absolute;bottom:-5px;right:0;z-index:1000">
+                                            <input id="box" type="checkbox" name="delface" style="width: 20px;height: 20px" value="{{ face.id }}">
+                                            </div>
+                                        </li>
+                                    {% endfor %}
+                                    {% if face_list %}
+                                        <div onclick="delprevious({{ page }})" style="position: absolute;top: 500px;left:500px"><a>上一页</a></div>
+                                        <div style="position: absolute;top: 500px;left:560px">{{ page }}/{{ total_page }}</div>
+                                        <div onclick="delnext({{ page }}, {{ total_page }})" style="position: absolute;top: 500px;left:600px"><a>下一页</a></div>
+                                    {% endif %}
+                                </ul>
+                            </div>
+                            <div role="tabpanel" class="tab-pane" id="insert">
+                                <form id="form"  enctype="multipart/form-data" method='POST' style="display: block">
+                                    <input type="file" id="xdaTanFileImg"  multiple="multiple"  name="file" onchange="xmTanUploadImg(this)"/>
+                                    <div class="img-box" id="imgboxid">
+                                    </div>
+                                    <div  id="bt" style="display: none">
+                                        <input type="button"  value="提交" style="width: 50px;height: 50px;" onclick="showface()" />
+                                    </div>
+                                </form>
+                            </div>
+						</div>
+					</div>
+                </div>
+			</div>
+        </div>
+{% endblock %}
+{% block scriptblock %}
+    <script type="text/javascript">
+    var homepage = 1
+    var delpage = 1
+function newfamous() {
+        $('#new').css('display',"block")
+        $('#showfmaous').css('display',"none")
+    }
+$(function () {
+    var p_type = {{ p_type }}
+    if(p_type==1){
+    $("#leftcontent").css('height','820px');
+    $("#rightcontent").css('height','820px');
+    setdivheight()
+    }if(p_type==2) {
+         $("#leftcontent").css('height', '1200px')
+         $("#rightcontent").css('height', '1200px')
+     }
+})
+$(function () {
+    $('.txt').on('click', 'a', function () {
+        var famousid = $(this).data('famousid');
+        var famousname = $(this).text();
+        var data = {
+            'famousid':famousid,
+            'famousname':famousname
+        }
+        $.ajax({
+            url: '/video/targetmag',
+            type: 'post',
+            data: data,
+            dataType: 'json',
+            success:function (resp){
+                var p_type = resp.p_type;
+                var famous_name = resp.famous_name;
+                var famous_id = resp.famous_id;
+                var face_length = resp.face_length;
+                var face_url_list = resp.face_url_list;
+                var famous_updata_time = resp.famous_updata_time;
+                var birthplace = resp.birthplace;
+                var birthday = resp.birthday;
+                var height = resp.height;
+                var university = resp.university;
+                var works = resp.works;
+                var box1=document.getElementById("datafamousname");
+                box1.innerHTML='<h1 id="famous" data-famous="'+ famous_id + '">'+ famous_name +'</h1>';
+                var box2=document.getElementById("datafacelength");
+                box2.innerHTML='<span>目标特征图片<span style="font-size: 24px">'+ face_length +'</span>张</span>'
+                var box3=document.getElementById("famousdata");
+                if(p_type==1){
+                    $("#leftcontent").css('height','820px')
+                    $("#rightcontent").css('height','820px')
+                    setdivheight()
+                box3.innerHTML = '<div class="col-sm-12" style="font-size: 16px;line-height: 24px;text-align: left">\n' +
+                    '                        <span style="font-size: 20px;line-height: 24px;margin-left: 20px">作品</span>：<input value="'+works+'" style="display: none;width: 600px" id="in-work"><span style="font-size: 16px;line-height: 24px;" id="s-work">'+works+'</span>\n' +
+                    '                    </div>\n' +
+                    '                    <div class="col-sm-12"  style="font-size: 16px;line-height: 24px;text-align: left">\n' +
+                    '                        <span style="font-size: 20px;line-height: 24px;margin-left: 20px">大学</span>：<input value="'+ university +'" style="display: none;" id="in-university"><span style="font-size: 16px;line-height: 24px;" id="s-university">'+ university+'</span>\n' +
+                    '                        <span style="font-size: 20px;line-height: 24px;margin-left: 20px">出生地</span>：<input value="'+ birthplace +'" style="display: none;" id="in-birthplace"><span style="font-size: 16px;line-height: 24px;" id="s-birthplace">'+ birthplace+'</span>\n' +
+                    '                        <span style="font-size: 20px;line-height: 24px;margin-left: 20px">出生日期</span>：<input value="'+ birthday +'" style="display: none;" id="in-birthday" ><span style="font-size: 16px;line-height: 24px;" id="s-birthplace">'+ birthday+'</span>\n' +
+                    '                        <span style="font-size: 20px;line-height: 24px;margin-left: 20px">身高</span>：<input value="'+height +'" style="display: none;" id="in-height"><span style="font-size: 16px;line-height: 24px;" id="s-height">'+ height+'</span>\n' +
+                    '                    </div>\n' +
+                    '                    <div class="col-sm-12" style="font-size: 16px;line-height: 24px;text-align: left" id="datafamousupdatatime">\n' +
+                    '                        <span style="font-size: 20px;line-height: 24px;margin-left: 20px">更新时间</span>：<span style="font-size: 16px;line-height: 24px">'+ famous_updata_time+'</span>\n' +
+                    '                    </div>'
+                }
+                if(p_type==2){
+                    $("#leftcontent").css('height','1300px')
+                    $("#rightcontent").css('height','1300px')
+                    box3.innerHTML = '<div class="col-sm-12" style="font-size: 16px;line-height: 24px;text-align: left">\n' +
+                    '                        <span style="font-size: 20px;line-height: 24px;margin-left: 20px">简介</span>：<input value="'+works+'" style="display: none;width: 600px" id="in-work"><span style="font-size: 16px;line-height: 24px;" id="s-work">'+works+'</span>\n' +
+                    '                    </div>'
+                }
+                $('#new').css('display',"none")
+                $('#showfmaous').css('display',"block")
+            }
+        })
+        $.ajax({
+            url: '/video/getfacepic',
+            type: 'post',
+            data: {"page": homepage, "famous_id":famousid},
+            success:function (resp){
+                var resu_data = JSON.parse(resp)
+                var face_list = resu_data.face_list
+                var box4=document.getElementById("datafaceurl");
+                var data = ''
+                var box5=document.getElementById("delfaceurl");
+                var totalpage = resu_data.total_page
+                var deldata = ''
+                for (var i = 0; i < face_list.length; i++) {
+                    var url = face_list[i]['url'];
+                    var id = face_list[i]['id'];
+                    data = data + '<li> <a href="'+ url +'" title="Photo Title" data-rel="colorbox" target="_blank"> <img alt="150x150" src="'+ url+'" width="150px" height="150px"/> </a> </li>'
+                    deldata = deldata + '<li> <a title="Photo Title" data-rel="colorbox"> <img alt="150x150" src="'+ url+'" width="150px" height="150px"/> </a><div class="checkbox" style="position:absolute;bottom:-5px;right:0;z-index:1000"><input id="box" type="checkbox" name="delface" style="width: 20px;height: 20px" value='+id+' ></li>'
+                }
+                if(face_list.length==0){
+                    box4.innerHTML = data
+                     box5.innerHTML = deldata
+                }else {
+                     box4.innerHTML = data + '<div style="position: absolute;top: 500px;left:500px" onclick="homeprevious('+ homepage + ')"><a>上一页</a></div><div style="position: absolute;top: 500px;left:560px">'+homepage+'/'+totalpage+'</div><div style="position: absolute;top: 500px;left:600px" onclick="homenext('+ homepage+','+totalpage+')"><a>下一页</a></div>'
+                    box5.innerHTML = deldata + '<div style="position: absolute;top: 500px;left:500px" onclick="delprevious('+ homepage + ')"><a>上一页</a></div><div style="position: absolute;top: 500px;left:560px">'+homepage+'/'+totalpage+'</div><div style="position: absolute;top: 500px;left:600px" onclick="delnext('+ homepage+','+totalpage+')"><a>下一页</a></div>'
+                }
+            }
+        })
+    })
+})
+var sltotal = 0;
+$(".left_nav li .t i").click(function(){
+    var this_ = $(this)
+    this_.parent(".t").toggleClass("hover");
+    this_.parent(".t").next(".txt").slideToggle();
+    setdivheight()
+});
+function changefamous() {
+    $('#in-work').css('display','inline-block');
+    $('#in-birthday').css('display','inline-block');
+    $('#in-birthplace').css('display','inline-block');
+    $('#in-height').css('display','inline-block');
+    $('#in-university').css('display','inline-block');
+    $('#s-work').css('display','none');
+    $('#s-birthday').css('display','none');
+    $('#s-birthplace').css('display','none');
+    $('#s-height').css('display','none');
+    $('#s-university').css('display','none');
+}
+$(function(){
+    $("#myTab li a").click(function() {
+        $(this).css({'color':"white"});
+        $(this).parent().siblings().children('a').css({
+            'color':"black"
+        })
+    });
+
+});
+var formFile = new FormData();
+function xmTanUploadImg(obj) {
+        var fl=obj.files.length;
+        for(var i=0;i<fl;i++){
+            var file=obj.files[i];
+            formFile.append('file',file)
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                $('#bt').css('display','block');
+                var imgstr='<img style="width:100px;height:100px;" src="'+e.target.result+'"/>';
+                var oimgbox=document.getElementById("imgboxid");
+                var ndiv=document.createElement("div");
+                ndiv.innerHTML=imgstr;
+                ndiv.className="img-div";
+                oimgbox.appendChild(ndiv);
+            }
+            reader.readAsDataURL(file);
+        }
+    };
+function firstUploadImg(obj) {
+        var fl=obj.files.length;
+        for(var i=0;i<fl;i++){
+            var file=obj.files[i];
+            formFile.append('file',file)
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                $('#firstbt').css('display','block');
+                var imgstr='<img style="width:100px;height:100px;" src="'+e.target.result+'"/>';
+                var oimgbox=document.getElementById("firstimgboxid");
+                var ndiv=document.createElement("div");
+                ndiv.innerHTML=imgstr;
+                ndiv.className="img-div";
+                oimgbox.appendChild(ndiv);
+            }
+            reader.readAsDataURL(file);
+        }
+    };
+function showfamousname() {
+    var famousname = $('#famouname').val();
+    var divh1 = document.getElementById("fname");
+    divh1.innerHTML = '<span>'+famousname+'</span>'
+}
+function firstshowface() {
+    $.ajax({
+        url:'/video/getfacelist',
+        type:'post',
+        data:formFile,
+        processData:false,
+        contentType: false,
+        success:function (resp) {
+            var divA = document.getElementById("firstinsert");
+            var face_list = JSON.parse(resp);
+            var data = '';
+            for (var i = 0; i < face_list.length; i++) {
+                var face = face_list[i]
+                var url = face['file_url'];
+                var path = face['file_path'];
+                var feat = face['feat'];
+                data = data + '<li><a title="Photo Title" data-rel="colorbox" target="_blank" href="'+ url +'"><img alt="150x150" src="'+url+'" style="width:150px;height:150px"/></a><div class="checkbox" style="position:absolute;bottom:-5px;right:0;z-index:1000"><input class="box" type="checkbox" name="addface" style="width: 20px;height: 20px" value='+url+' data-feat='+feat+' data-path='+path+'> </div></li>'
+            };
+           divA.innerHTML = '<ul class="ace-thumbnails">' + data +  '</ul>';
+        }
+    });
+}
+function showface() {
+    $.ajax({
+        url:'/video/getfacelist',
+        type:'post',
+        data:formFile,
+        processData:false,
+        contentType: false,
+        success:function (resp) {
+            var divA = document.getElementById("insert");
+            var face_list = JSON.parse(resp);
+            var data = '';
+            for (var i = 0; i < face_list.length; i++) {
+                var face = face_list[i]
+                var url = face['file_url'];
+                var path = face['file_path'];
+                var feat = face['feat'];
+                data = data + '<li><a title="Photo Title" data-rel="colorbox" target="_blank" href="'+ url +'"><img alt="150x150" src="'+url+'" style="width:150px;height:150px"/></a><div class="checkbox" style="position:absolute;bottom:-5px;right:0;z-index:1000"><input class="box" type="checkbox" name="addface" style="width: 20px;height: 20px" value='+url+' data-feat='+feat+' data-path='+path+'> </div></li>'
+            };
+           divA.innerHTML = '<ul class="ace-thumbnails">' + data +  '</ul>';
+        }
+    });
+}
+function firstupdata() {
+    var face_array=new Array();
+    $('input[name="addface"]:checked').each(function(){
+        face_array.push({'url':$(this).val(),'path':$(this).data('path'),'feat':$(this).data('feat')});
+    });
+    var famousname = $('#fname').children().text();
+    var p_type = $('input[name="classification"]:checked').val()
+  var add_data = {
+        'val':JSON.stringify(face_array),
+        'famousname':famousname,
+        'p_type':p_type,
+  }
+    if(face_array.length>0){
+        $.ajax({
+        url:'/video/newfamous',
+        type:'post',
+        data:add_data,
+        dataType: 'json',
+        success:function (resp){
+            if(resp.ret==0){
+                window.location.href="/video/targetmag";
+            }else{
+                alert(resp.val)
+            }
+            }
+        })
+    }
+}
+function updata() {
+    var face_array= new Array();
+    var del_face_array = new Array();
+    var famous_id = $('#famous').data('famous')
+    var p_type = {{ p_type }}
+    $('input[name="addface"]:checked').each(function(){
+        face_array.push({'url':$(this).val(),'path':$(this).data('path'),'feat':$(this).data('feat'), 'famous_id':famous_id});
+    });
+    $('input[name="delface"]:checked').each(function(){
+        del_face_array.push({'id':$(this).val()});
+    });
+
+
+  var add_data = {
+        'val':JSON.stringify(face_array),
+
+  }
+    if(face_array.length>0){
+        $.ajax({
+        url:'/video/addface',
+        type:'post',
+        data:add_data,
+        dataType: 'json',
+            success:function (resp){
+            if(resp.ret==0){
+                 window.location.href="/video/targetmag";
+            }
+            }
+        })
+    }
+    var del_data = {
+        'val':JSON.stringify(del_face_array),
+    }
+    if(del_face_array.length>0){
+        $.ajax({
+        url:'/video/delface',
+        type:'post',
+        data:del_data,
+        dataType: 'json',
+        success:function (resp){
+            if(resp.ret==0){
+                 window.location.href="/video/targetmag";
+            }
+            }
+        })
+    }
+    if(p_type==1){
+    var work =  $('#in-work').val();
+    var birthday =  $('#in-birthday').val();
+    var birthplace =  $('#in-birthplace').val();
+    var height =  $('#in-height').val();
+    var university =  $('#in-university').val();
+    var famous_id = $('#famous').data('famous')
+    var change_data = {
+        'work':work,
+        'birthday':birthday,
+        'birthplace':birthplace,
+        'height':height,
+        'university':university,
+        'famous_id':famous_id,
+    };
+    $.ajax({
+        url:'/video/changefamous',
+        type:'post',
+        data:change_data,
+        dataType: 'json',
+            success:function (resp){
+            if(resp.ret==0){
+                window.location = '/video/targetmag'
+            }else {
+                alert(resp.val)
+            }
+            }})
+    }
+
+}
+function search() {
+    var input, filter, table, tr, td, i;
+    input = document.getElementById("search");
+    filter = input.value.toUpperCase();
+    $(".txt").each(function () {
+        table = $(this);
+        tr = table.find('a');
+        for (i = 0; i < tr.length; i++) {
+        if(filter==null||filter==undefined||filter==""){
+                $(tr[i]).parent().css('display','block');
+        }else {
+            td=tr[i].innerHTML;
+            if (td.toUpperCase().indexOf(filter) > -1) {
+            $(tr[i]).parent().css('display','block');
+            table.siblings('.t').addClass("hover");
+            table.slideDown()
+            }
+            else {
+            $(tr[i]).parent().css('display','none');
+            }
+        }
+        }
+    })
+        setdivheight()
+      };
+
+function homeprevious(homepage) {
+    homepage = homepage-1;
+    if(homepage<1){
+        homepage = 1
+    }
+    homepicsearch(homepage);
+}
+function homenext(homepage, totalpage) {
+    homepage = homepage +1;
+    if(homepage>totalpage){
+        homepage = totalpage
+    }
+    homepicsearch(homepage);
+}
+function homepicsearch(homepage) {
+var famous_id = $('#famous').data('famous');
+$.ajax({
+        type: 'POST',
+        url: '/video/getfacepic',
+        data: {"page": homepage, "famous_id":famous_id},
+        success:function (resu) {
+            var resu_data = JSON.parse(resu)
+            var face_list = resu_data.face_list
+            var divA = document.getElementById("datafaceurl");
+            var data = ''
+            var totalpage = resu_data.total_page
+            for (var i = 0; i < face_list.length; i++) {
+                var face = face_list[i]
+                var url = face['url'];
+                var faceid = face['id'];
+                var path = face['file_path'];
+                var feat = face['feat'];
+                data = data + '<li><a title="Photo Title" data-rel="colorbox" target="_blank" href="'+ url +'"><img alt="150x150" src="'+url+'" style="width:150px;height:150px"/></a></li>'
+            };
+            divA.innerHTML = data + '<div style="position: absolute;top: 500px;left:500px" onclick="homeprevious('+ homepage + ')"><a>上一页</a></div></div><div style="position: absolute;top: 500px;left:560px">'+homepage+'/'+totalpage+'</div><div style="position: absolute;top: 500px;left:600px" onclick="homenext('+ homepage+','+totalpage+' )"><a>下一页</a></div>'
+        }
+    })
+};
+
+function delprevious(delpage) {
+    delpage = delpage-1;
+    if(delpage<1){
+        delpage = 1
+    }
+    delpicsearch(delpage);
+}
+function delnext(delpage, totalpage) {
+    delpage = delpage +1;
+    if(delpage>totalpage){
+        delpage = totalpage
+    }
+    delpicsearch(delpage);
+}
+function delpicsearch(delpage) {
+    var famous_id = $('#famous').data('famous');
+    $.ajax({
+        type: 'POST',
+        url: '/video/getfacepic',
+        data: {"page": delpage, "famous_id":famous_id},
+        success:function (resu) {
+            var resu_data = JSON.parse(resu)
+            var face_list = resu_data.face_list
+            var divA = document.getElementById("delfaceurl");
+            var data = ''
+            var totalpage = resu_data.total_page
+            for (var i = 0; i < face_list.length; i++) {
+                var face = face_list[i]
+                var url = face['url'];
+                var faceid = face['id'];
+                var path = face['file_path'];
+                var feat = face['feat'];
+                data = data + '<li class="img-li"> <a title="Photo Title" data-rel="colorbox" > <img alt="150x150" src="'+url+'" width="150px" height="150px"/> </a> <div class="checkbox" style="position:absolute;bottom:-5px;right:0;z-index:1000"> <input id="box" type="checkbox" name="delface" style="width: 20px;height: 20px" value="'+faceid+'"> </div> </li>'
+            };
+            divA.innerHTML = data + '<div style="position: absolute;top: 500px;left:500px" onclick="delprevious('+ delpage + ')"><a>上一页</a></div></div><div style="position: absolute;top: 500px;left:560px">'+delpage+'/'+totalpage+'</div><div style="position: absolute;top: 500px;left:600px" onclick="delnext('+ delpage+','+totalpage+')"><a>下一页</a></div>'
+        }
+    })
+};
+function delfamous() {
+    var famous_id = $('#famous').data('famous')
+    data = {
+        'val':famous_id
+    }
+    if(confirm("确认要删除？")){
+
+        $.ajax({
+        type: 'POST',
+        url: '/video/delfamous',
+        data:data,
+        success:function (resu){
+            var resu = JSON.parse(resu)
+            if(resu.ret==0){
+                window.location = '/video/targetmag'
+            }
+        }
+    })
+    }else {}
+
+}
+function setdivheight() {
+    if($('.left_nav').children().find('#f-fmaous').siblings('.t').hasClass("hover") && $('.left_nav').children().find('#f-politics').siblings('.t').hasClass("hover")){
+        $("#leftcontent").css('height','1200px')
+            $("#rightcontent").css('height','1200px')
+    }else {
+        $("#leftcontent").css('height','820px')
+            $("#rightcontent").css('height','820px')
+    }
+}
+</script>
+{% endblock %}
+

@@ -1,0 +1,436 @@
+{% extends 'video/base.html' %}
+{% load static %}
+{% block headblock %}
+    <style>
+    * {
+        margin: 0;
+        padding: 0;
+    }
+    .wrap h3 {
+        text-align: center;
+        height: 100px;
+        line-height: 100px;
+    }
+    .player {
+        width: 720px;
+        height: 400px;
+        margin: 0 auto;
+        position: absolute;
+    }
+    .player video {
+        position: absolute;
+        height: 100%;
+    }
+
+    .player .control {
+        position: absolute;
+        background: #438eb9;
+        width: 720px;
+        height: 40px;
+        border-radius: 5px;
+        left: 50%;
+        bottom: -40px;
+        transform: translateX(-50%);
+    }
+    .player .control div {
+        display: inline-block;
+        line-height: 40px;
+        margin-left: 10px;
+        font-size: 18px;
+        color: #fff;
+    }
+    .player .control div:nth-child(1) {
+        width: 520px;
+        height: 10px;
+        background-color: rgba(255, 255, 255, 0.3);
+        border-ra00dius: 5px;
+        overflow: hidden;
+    }
+    .player .control .progress {
+        display: block;
+        width: 0;
+        height: 10px;
+        background: #fff;
+    }
+    .player .control .timer {
+        font-size: 12px;
+    }
+    .activate{
+        background-color: #00be67;
+    }
+</style>
+{% endblock %}
+{% block breadcrub %}
+    <li>
+        <a href="javascript:void(0)">视频页面</a>
+    </li>
+{% endblock %}
+{% block bodyblock %}
+    <div class="content" style="display: inline-block">
+        <div class="player">
+            <video id="video"  preload="meta" controls controlsList='nodownload' style="z-index: 200;width: 720px;height: 400px" data-x="{{famous_name_list}}">
+                <source src="{{ file_url }}" type="video/mp4">
+            </video>
+            {% for foo in famous_name_list %}
+            <div class="control" id="control_{{ forloop.counter0 }}">
+                <div class="progressBar" id="progressBar_{{ forloop.counter0 }}">
+                    <span class="progress" id="progress_{{ forloop.counter0 }}"></span>
+                </div>
+                <canvas id="canvas_{{ forloop.counter0 }}" style="position: absolute;left: 10px;bottom: 12px;z-index: 1000" class="canvas"></canvas>
+                <div class="timer">
+                    <span class="progress_timer" id="progress_timer_{{ forloop.counter0 }}">00:00:00</span>/
+                    <span class="duration_timer" id="duration_timer_{{ forloop.counter0 }}" >00:00:00</span>
+                    <span style="color: black;font-size: 16px">{{ foo }}</span>
+                </div>
+            </div>
+            {% endfor %}
+            <canvas id="canvas" style="position: absolute;z-index: 1000;"  onclick="setvideo()"></canvas>
+        </div>
+
+    </div>
+    <div class="row" style="position: absolute;margin-left: 800px;">
+        <div class="row" style="border: 0.5px #008CD4 solid;width: 900px;height: 130px;text-align: left;">
+            <h4>视频名字：{{ video_name }}</h4>
+            <h4>视频格式：{{ video_format }}</h4>
+            <h4>视频大小：{{ size }}</h4>
+            <h4>视频时长：{{ video_length }}</h4>
+        </div>
+        <div class="row" style="border: 0.5px #008CD4 solid;width: 900px;height: 650px;margin-top: 20px">
+
+        <ul id="myTab" class="nav nav-tabs" role="tablist" >
+            {% for foo in famous_name_list %}
+            <li role="presentation" ><a href="#famoustab_{{ forloop.counter0 }}" aria-controls="{{ foo }}" role="tab" data-toggle="tab" style="background-color: #428bca;color: black">{{ foo }}</a></li>
+            {% endfor %}
+        </ul>
+
+            <div class="tab-content" style="border: 0">
+                {% for foo in famous_name_list %}
+                <div role="tabpanel" class="tab-pane" id="famoustab_{{ forloop.counter0 }}">
+                </div>
+                {% endfor %}
+            </div>
+            <table width="60%" align="right">
+                    <tr><td><div id="barcon" name="barcon"></div></td></tr>
+            </table>
+        </div>
+    </div>
+{% endblock %}
+{% block scriptblock %}
+<script>
+var resu = {{ task_resu | safe }}
+var task_face_dict = {{ task_face_dict | safe }}
+var famous_name_list = {{ famous_name_str | safe }}
+
+var famous_img_dict = {{ famous_img_dict | safe }}
+var famous_point_dict = {{ famous_point_dict | safe }}
+var task_face_str = task_face_dict
+
+var videoObj = document.getElementById('video')
+function setvideo() {
+      if(videoObj.paused){
+        videoObj.play()
+      }else{
+        videoObj.pause()
+      }
+}
+var totalT = 0
+var presentT = 0
+var timeDrag = false;
+function updatetime(progress_timer_, progress_, presentT) {
+        var videoCurrent = formatTime(presentT)
+        progress_timer_[0].innerHTML = videoCurrent
+        var percent = presentT / totalT * 100
+        progress_.css('width', percent + '%')
+}
+$('.progressBar').each(function () {
+    $(this).mousedown(function(e){
+        timeDrag = true;
+        var progressBar_ = $(this);
+        var progress_ = $(this).children();
+        var progress_timer_ = $(this).siblings('.timer').find('.progress_timer')
+
+        updatebar(e.pageX,progressBar_,progress_,progress_timer_);
+    })
+});
+$('.canvas').each(function (){
+     $(this).mousedown(function(e){
+         timeDrag = true
+         var progressBar_ = $(this).siblings('.progressBar')
+         var progress_ = $(this).siblings('.progressBar').children();
+         var progress_timer_ = $(this).siblings('.timer').find('.progress_timer')
+         updatebar(e.pageX,progressBar_,progress_,progress_timer_);
+     })
+})
+videoObj.addEventListener('canplay',function(){
+    for(var i=0; i<famous_name_list.length; i++){
+        totalT = this.duration
+        var videoDuration = formatTime(totalT)
+        $('#duration_timer_'+i)[0].innerHTML = videoDuration
+
+        var famousname = famous_name_list[i]
+        var progress_bar_len = $('#progressBar_'+i).width()
+        var famous_point_list = famous_point_dict[famousname]
+        var canvas = document.getElementById('canvas_'+i)
+        var bar = document.getElementById('progress_'+i)
+        canvas.width = 520;
+        canvas.height = 10;
+        // draw points
+
+        drawPoints(famous_point_list, canvas, progress_bar_len, totalT)
+    }
+})
+function formatTime(t){
+	var h = parseInt(t/3600)
+	h = h<10?'0'+h:h
+	var m = parseInt(t%3600/60)
+	m = m<10?'0'+m:m
+	var s = parseInt(t%60)
+	s = s<10?'0'+s:s
+	return h+':'+m+':'+s
+}
+function updatebar(x, progressBar_,progress_,progress_timer_) {
+        var maxduration = videoObj.duration;
+        console.log(maxduration)
+        var position = x - progressBar_.offset().left; //Click pos
+        var percentage = 100 * position / progressBar_.width();
+        //Check within range
+        if(percentage > 100) {
+            percentage = 100;
+        }
+        if(percentage < 0) {
+            percentage = 0;
+        }
+
+        progress_.css('width', percentage+'%');
+        //video[0].pause();
+        videoObj.currentTime = maxduration * percentage / 100;
+        var presentT = videoObj.currentTime
+        updatetime(progress_timer_, progress_, presentT)
+}
+$(function () {
+    for(var i=0; i<famous_name_list.length; i++){
+        var famousname = famous_name_list[i]
+        var bottom = -50*(i+1) + 'px';
+        $('#control_'+ i).css('bottom',bottom);
+        //注册事件
+
+
+        var face_list = famous_img_dict[famousname]
+        var famoustab_ = $('#famoustab_'+i)[0];
+        var data = ''
+        for (var j = 0; j < face_list.length; j++) {
+            var url = face_list[j];
+            data = data + '<li><a href="'+url+'" title="Photo Title" data-rel="colorbox" target="_blank"><img alt="150x150" src="'+url+'" width="150px" height="150px"/></a></li>'
+        }
+        if(face_list.length>0){
+          famoustab_.innerHTML = '<ul class="ace-thumbnails" id=pageMain'+i+'>'+data+'</ul> <div id="pageBox'+i+'"> <span id="prev'+i+'" style="position: absolute;top: 550px;left:250px;font-size:16px">上一页</span><ul id="pageNav'+i+'" style="position: absolute;top: 550px;left:410px;font-size:16px"></ul><span id="next'+i+'" style="position: absolute;top: 550px;left:600px;font-size:16px">下一页</span> </div>'
+        }
+    }
+    $('#famoustab_0').addClass('active')
+})
+$(function () {
+    for(var i=0; i<famous_name_list.length; i++){
+        tabPage({
+            pageMain: '#pageMain'+i,
+            pageNav: '#pageNav'+i,
+            pagePrev: '#prev'+i,
+            pageNext: '#next'+i,
+            curNum: 15, /*每页显示的条数*/
+            activeClass: 'activate', /*高亮显示的class*/
+            ini: 0/*初始化显示的页面*/
+        });
+        function tabPage(tabPage) {
+            var pageMain = $(tabPage.pageMain);
+            /*获取内容列表*/
+            var pageNav = $(tabPage.pageNav);
+            /*获取分页*/
+            var pagePrev = $(tabPage.pagePrev);
+            /*上一页*/
+            var pageNext = $(tabPage.pageNext);
+            /*下一页*/
+
+
+            var curNum = tabPage.curNum;
+            /*每页显示数*/
+            var len = Math.ceil(pageMain.find("li").length / curNum);
+            /*计算总页数*/
+            var pageList = '';
+            /*生成页码*/
+            var iNum = 0;
+            /*当前的索引值*/
+
+            pageList = '<a href="javascript:;" style="color:black" >' + 1 + '</a>--<span href="javascript:;" style="color:black" >' + 1 + '</span>--<a href="javascript:;" style="color:black" >' + len + '</a>'
+            //pageList = '<a href="javascript:;" style="color:black" >' + 1 + '</a>/<a href="javascript:;" style="color:black" >' + len + '</a>'
+            pageNav.html(pageList);
+
+            /*******标签页的点击事件*******/
+            pageNav.find("a").each(function(){
+                    var page = $(this).text()
+
+                    $(this).click(function () {
+                        //pageNav.children().eq(0)[0].innerHTML = page
+                        pageNav.children().eq(1)[0].innerHTML = page
+                        iNum = page - 1
+                        $(pageMain).find("li").hide();
+                        for (var i = ($(this).html() - 1) * curNum; i < ($(this).html()) * curNum; i++) {
+                            $(pageMain).find("li").eq(i).show()
+
+                        }
+                    });
+            })
+
+
+            $(pageMain).find("li").hide();
+            /************首页的显示*********/
+            for (var i = 0; i < curNum; i++) {
+                $(pageMain).find("li").eq(i).show()
+            }
+
+
+            /*下一页*/
+            pageNext.click(function () {
+                $(pageMain).find("li").hide();
+                if (iNum == len - 1) {
+                    alert('已经是最后一页');
+                    for (var i = (len - 1) * curNum; i < len * curNum; i++) {
+                        $(pageMain).find("li").eq(i).show()
+                    }
+                    return false;
+                } else {
+                    iNum++;
+                    //pageNav.children().eq(0)[0].innerHTML = (iNum+1)
+                    pageNav.children().eq(1)[0].innerHTML = (iNum+1)
+                }
+                for (var i = iNum * curNum; i < (iNum + 1) * curNum; i++) {
+                    $(pageMain).find("li").eq(i).show()
+                }
+            });
+            /*上一页*/
+            pagePrev.click(function () {
+                $(pageMain).find("li").hide();
+                if (iNum == 0) {
+                    alert('当前是第一页');
+                    for (var i = 0; i < curNum; i++) {
+                        $(pageMain).find("li").eq(i).show()
+                    }
+                    return false;
+                } else {
+                    iNum--;
+                    //pageNav.children().eq(0)[0].innerHTML = (iNum+1)
+                    pageNav.children().eq(1)[0].innerHTML = (iNum+1)
+                }
+                for (var i = iNum * curNum; i < (iNum + 1) * curNum; i++) {
+                    $(pageMain).find("li").eq(i).show()
+                }
+            })
+
+        }
+    }
+
+
+
+    })
+function matchTimestamp(current, frameList, delta) {
+    var max_id = -1;
+    var max_diff = delta * 1000
+    for (var j = 0; j < frameList.length; j++) {
+        var diff = current - frameList[j].timestamp
+        var facelist = frameList[j].faceList
+        if (facelist == undefined || facelist == [] || facelist == '') {
+            continue
+        }
+        if(diff > -0.2 * delta  && diff <= 0.8*delta )
+        {
+            diff = Math.abs(diff)
+            if(diff < max_diff)
+            {
+                max_diff = diff
+                max_id = j
+            }
+        }
+    }
+    if(max_id < 0)
+    {
+        return null
+    }
+    return frameList[max_id]
+}
+
+videoObj.addEventListener('timeupdate',function(){
+    presentT = this.currentTime
+    var z_index = $('#video').css('z-index');
+    var z_index_can = $('.sizing-medium').css('z-index');
+    var video_width = $('#video').width()
+    var video_height = $('#video').height()
+    var canvas = document.getElementById("canvas");
+    canvas.width = video_width;
+    canvas.height = video_height-50;
+    ctx = canvas.getContext("2d");
+    ctx.strokeStyle = "red";
+	ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    var frame = matchTimestamp(presentT, resu, 1.0)
+
+    if (frame == null) {
+        return
+    }
+
+    var timestamp = frame.timestamp
+    var height = frame.height
+    var width = frame.width
+    var facelist = frame.faceList
+    if (facelist == undefined || facelist == [] || facelist == '') {
+        return
+    }
+    var hrate = video_height*1.0 / height
+    var wrate = video_width*1.0 / width
+    for (var i = 0; i < facelist.length; i++) {
+        var x = facelist[i].x
+        var y = facelist[i].y
+        var w = facelist[i].w
+        var h = facelist[i].h
+        var celeb_id = facelist[i].celeb_id
+        var celeb_name = task_face_dict[celeb_id]
+        if((y+h)*hrate>345){
+            ctx.strokeRect(x * wrate, y * hrate, w * wrate, 344-y*hrate);
+            ctx.stroke();
+            ctx.font="24px";
+            ctx.fillStyle='yellow';
+            ctx.fillText(celeb_name,x * wrate,y * hrate);
+        }
+        else {
+            ctx.strokeRect(x * wrate, y * hrate, w * wrate, h * hrate);
+            ctx.stroke();
+            ctx.font="24px";
+            ctx.fillStyle='yellow';
+            ctx.fillText(celeb_name,x * wrate,y * hrate);
+        }
+
+    }
+    return
+});
+function drawPoints(famous_point_list, canvas, progress_bar_len, totalT){
+            var ctx = canvas.getContext('2d')
+            var bbox = canvas.getBoundingClientRect();
+            var N = famous_point_list.length;
+            for (var i=0;i < N;i++)
+            {
+                var r = 3;
+                var y = bbox.height/2;
+                var timestamp = famous_point_list[i]
+                var point_len = timestamp/totalT*progress_bar_len
+                var x = point_len + r;
+                var color = "yellow";
+                drawCircle(ctx, x, y, r, color);
+            }
+}
+function drawCircle(ctx, x, y, r, color) {
+            ctx.beginPath();
+            ctx.arc(x, y, r,0,2*Math.PI);
+            ctx.fillStyle=color;
+            ctx.fill();
+            ctx.closePath();
+}
+
+</script>
+{% endblock %}

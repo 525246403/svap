@@ -1,0 +1,445 @@
+{% extends 'video/base.html' %}
+{% load static %}
+{% block headblock %}
+    <link rel="stylesheet" href="{% static '/video/css/ace-fonts.css' %}" />
+    		<style type="text/css">
+			.CSSearchTbl{ border:1px #008CD4 solid;}
+			.CSSearchTbl thead{}
+			.CSSearchTbl thead tr{}
+			.CSSearchTbl thead tr th{  text-align:left; padding-left:10px;}
+			.CSSearchTbl tbody{}
+			.CSSearchTbl tbody tr{}
+			.CSSearchTbl tbody tr td{  padding: 10px;}
+			.CSSearchTbl tbody tr td.right{ text-align: left;}
+			.CSSearchTbl tbody tr td.left{ text-align: right;}
+			.table-responsive{ display: none;}
+		</style>
+{% endblock %}
+<!DOCTYPE html>
+<html lang="en">
+<body class="no-skin">
+            {% block breadcrub %}
+                <li>
+                    <a href="javascript:void(0)">视频管理</a>
+                </li>
+            {% endblock %}
+{% block bodyblock %}
+        <div class="page-content" style="position: relative">
+            <div class="col-xs-12">
+                <div class="row" style="border: 0.5px #008CD4 solid;height: 62px">
+                    <table width="100%" class="CSSearchTbl" cellpadding="0" cellspacing="0">
+                    <button class="btn btn-primary pull-left col-sm-12 tbl-search" data-dismiss="modal" style="width: 100px;margin: 10px 30px 10px 30px" onclick="showcreate()">
+                        新增视频
+                    </button>
+                    <button class="btn btn-primary pull-left col-sm-12 tbl-search" data-dismiss="modal"  style="width: 100px;margin: 10px 30px 10px 30px" onclick="changemedia()">
+                        修改视频
+                    </button>
+                    <button class="btn btn-primary pull-left col-sm-12 tbl-search" data-dismiss="modal"  style="width: 100px;margin: 10px 30px 10px 30px" onclick="delmedia()">
+                        删除视频
+                    </button>
+                    <button class="btn btn-primary pull-left col-sm-12 tbl-search" data-dismiss="modal"  style="width: 150px;margin: 10px 30px 10px 30px" onclick="keyframe()">
+                        添加关键帧任务
+                    </button>
+                    </table>
+                </div>
+                <div class="row">
+                    <table width="100%" class="CSSearchTbl" cellpadding="0" cellspacing="0">
+                        <tr>
+                            <td class="left">视频ID：</td>
+                            <td class="right"><input type="text" size="16"  id="videoid"/></td>
+                            <td class="left">视频名称：</td>
+                            <td class="right"><input type="text" size="16"  id="videoname"/></td>
+                            <td class="right">
+                                <button class="btn btn-primary pull-left col-sm-12 tbl-search" data-dismiss="modal" style="width: 300px" onclick="beginsearch()">
+                                    开始搜索
+                                    <i class="ace-icon fa fa-search"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+			</div>
+            <div class="row">
+            <div class="col-xs-12">
+                <div class="row">
+                        <div class="col-xs-12">
+                            <table id="sample-table-1" class="table table-striped table-bordered table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>选择</th>
+                                        <th>视频ID</th>
+                                        <th>外部ID</th>
+                                        <th>外部系统</th>
+                                        <th>名称</th>
+                                        <th>访问url</th>
+                                        <th>格式</th>
+                                        <th>大小</th>
+                                        <th>时长</th>
+                                        <th>本地地址</th>
+                                        <th>下载进度</th>
+                                        <th>状态</th>
+                                        <th>操作</th>
+                                        <th>关键帧任务进度</th>
+                                        <th>关键帧任务状态</th>
+                                        <th>查看关键帧</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody id="mediadata">
+                                {% for media in media_list %}
+                                    <tr>
+                                        <td class="center">
+                                            <label class="position-relative">
+                                                <input type="checkbox" class="ace" name="media" value="{{ media.media_id }}"/>
+                                                <span class="lbl"></span>
+                                            </label>
+                                        </td>
+                                        <td class="media_id">{{ media.media_id }}</td>
+                                        <td class="external_id"><input value="{{ media.external_id }}" style="display: none;width: 70px" ><span style="display: block">{{ media.external_id }}</span></td>
+                                        <td class="external_system"><input value="{{ media.external_system }}" style="display: none;width: 70px"><span style="display: block">{{ media.external_system }}</span></td>
+                                        <td class="medianame"><input value="{{ media.name }}" style="display: none;width: 70px"><span style="display: block">{{ media.name }}</span></td>
+                                        <td>{{ media.file_url }}</td>
+                                        <td>{{ media.video_format }}</td>
+                                        <td>{{ media.size }}</td>
+                                        <td>{{ media.video_length }}</td>
+                                        <td>{{ media.file_path }}</td>
+                                        <td class="progress">{{ media.progress }}</td>
+                                        <td class="status">{{ media.media_status }}</td>
+                                        <td class="btnchange"><button >修改</button></td>
+                                        <td class="keyframeprogress">{{ media.keyframe_progress }}</td>
+                                        <td class="keyframestatus" >{{ media.keyframe_status }}</td>
+                                        <td class="keyframe">
+                                            {% if media.is_keyframe %}
+                                            <a href="keyframetask/?media_id={{ media.media_id }}">查看</a>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                            <div id="pagination" style="margin-bottom: 10px;text-align: center">
+                            {% if total_page %}
+                                <ul id="pagination-flickr">
+                                    {% if contacts.has_previous %}
+                                    <li class="previous" style="display: inline-block"><a href="?page={{ contacts.previous_page_number }}{% if request.GET.year %}&year={{ request.GET.year }}{% endif %}{% if request.GET.month %}&month={{ request.GET.month }}{% endif %}{% if request.GET.cid %}&cid={{ request.GET.cid }}{% endif %}">&laquo;上一页</a></li>
+                                    {% else %}
+                                    <li class="previous-off" style="display: inline-block">&laquo;上一页</li>
+                                    {% endif %}
+
+                                     <li class="active" style="display: inline-block"> {{ contacts.number }}/{{ contacts.paginator.num_pages }}</li>
+                                    {% if contacts.has_next %}
+                                      <li class="next" style="display: inline-block"><a href="?page={{ contacts.next_page_number }}{% if request.GET.year %}&year={{ request.GET.year }}{% endif %}{% if request.GET.month %}&month={{ request.GET.month }}{% endif %}{% if request.GET.cid %}&cid={{ request.GET.cid }}{% endif %}">下一页 &raquo;</a></li>
+                                    {% else %}
+                                      <li class="next-off" style="display: inline-block">下一页 &raquo;</li>
+                                    {% endif %}
+                               </ul>
+                            {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div style="position: absolute;width: 800px;height: 400px;top: 210px;left:400px;background-color: white;display: none" id="create">
+            <div style="width: 700px;height: 50px;position: relative;left: 50px;top: 20px;text-align: center;font-size: 24px;line-height: 50px"><button class="btn btn-primary " onclick="changedata()" id="changedata">外部视频上传</button></div>
+            <div style="position: relative;left: 50px;top: 60px;" id="box">
+                <div><label style="font-size: 20px;line-height: 42px;display: inline-block;width: 100px">外部ID</label><input type="text"  style="width: 400px;height: 42px;vertical-align: bottom" name="external_id" id="external_id"/></div>
+                <div><label style="font-size: 20px;line-height: 42px;display: inline-block;width: 100px">外部系统</label><input type="text"  style="width: 400px;height: 42px;vertical-align: bottom" name="external_system" id="external_system"/></div>
+                <div><label style="font-size: 20px;line-height: 42px;display: inline-block;width: 100px">名称</label><input type="text"  style="width: 400px;height: 42px;vertical-align: bottom" name="video_name" id="video_name"/></div>
+                <div><label style="font-size: 20px;line-height: 42px;display: inline-block;width: 100px">视频url</label><input type="text"  style="width: 400px;height: 42px;vertical-align: bottom"  name="videodata" id="videodata"/></div>
+            </div>
+            <div style="position: relative;left: 50px;top: 200px;font-size:0;">
+                <button class="btn btn-primary tbl-search" style="width: 100px;left: 150px" onclick="newcreate()">新增</button>
+                <button class="btn tbl-search" style="width: 100px;left: 200px" onclick="closecreate()">关闭</button>
+            </div>
+
+        </div>
+{% endblock %}
+        {% block scriptblock %}
+            <script type="text/javascript">
+            function showcreate() {
+                $('#create').css('display','block')
+            }
+            function closecreate() {
+                $('#create').css('display','none')
+            }
+            function changedata() {
+                var box=document.getElementById("box");
+                if($('#changedata').text()=='外部视频上传'){
+                    $('#changedata').text('本地视频上传')
+                    box.innerHTML= '<input type="file" style="font-size:18px" name="videodata" id="videodata" >'
+                }else {
+                    $('#changedata').text('外部视频上传');
+                    box.innerHTML='<div><label style="font-size: 20px;line-height: 42px;display: inline-block;width: 100px">外部ID</label><input type="text"  style="width: 400px;height: 42px;vertical-align: bottom" name="external_id" id="external_id"/></div>'+
+                '<div><label style="font-size: 20px;line-height: 42px;display: inline-block;width: 100px">外部系统</label><input type="text"  style="width: 400px;height: 42px;vertical-align: bottom" name="external_system" id="external_system"/></div>'+
+                '<div><label style="font-size: 20px;line-height: 42px;display: inline-block;width: 100px">名称</label><input type="text"  style="width: 400px;height: 42px;vertical-align: bottom" name="videoname" id="videoname"/></div>'+
+                '<div><label style="font-size: 20px;line-height: 42px;display: inline-block;width: 100px">视频url</label><input type="text"  style="width: 400px;height: 42px;vertical-align: bottom"  name="videodata" id="videodata"/></div>'
+                }
+            }
+            function newcreate() {
+                var external_id = $('#external_id').val();
+                var external_system = $('#external_system').val();
+                var video_name = $('#video_name').val();
+
+                var type = $('#videodata').attr('type');
+                if(type=='text'){
+                    var file_url = $('#videodata').val()
+                    data = {
+                        'type':'url',
+                        'external_id':external_id,
+                        'external_system':external_system,
+                        'video_name':video_name,
+                        'file_url':file_url,
+                };
+                $.ajax({
+                    url:'/video/upload',
+                    type:'post',
+                    data:data,
+                    dataType: 'json',
+                    success:function (resp){
+                        if(resp.ret==0){
+                            window.location.href="/video/videoadmin"
+                        }else {
+                            var val = resp.val
+                            alert(val)
+                        }
+
+                    }
+                })
+                }else {
+                    var formFile = new FormData();
+                    var fl=$('#videodata')[0].files[0];
+                    formFile.append('file',fl)
+                    $.ajax({
+                    url:'/video/upload',
+                    type:'post',
+                    data:formFile,
+                    processData:false,
+                    contentType: false,
+                    success:function (resp){
+                        window.location.href="/video/videoadmin"
+                    }
+                    })
+
+            }}
+            function beginsearch() {
+                var videoid = $('#videoid').val()
+                var videoname = $('#videoname').val()
+                data = {
+                    'videoid':videoid,
+                    'videoname':videoname,
+                }
+                if((videoid==null||videoid==undefined||videoid=="")&&(videoname==null||videoname==undefined||videoname=="")){
+                    window.location.href="/video/videoadmin"
+                }else {
+                    $.ajax({
+                    url:'/video/searchvideo',
+                    type:'post',
+                    data:data,
+                    dataType: 'json',
+                    success:function (resp){
+                        if(resp.ret==0){
+                        var media_list = JSON.parse(resp.val);
+console.log(media_list)
+                        var box=document.getElementById("mediadata");
+                        var data = '';
+                        for (var i = 0; i < media_list.length; i++) {
+                                var media_id = media_list[i]['media_id']
+                                var external_id = media_list[i]['external_id']
+                                var external_system = media_list[i]['external_system']
+                                var name = media_list[i]['name']
+                                var video_format = media_list[i]['video_format']
+                                var file_url = media_list[i]['file_url']
+                                var size = media_list[i]['size']
+                                var video_length = media_list[i]['video_length']
+                                var file_path = media_list[i]['file_path']
+                                var media_status = media_list[i]['media_status']
+                                var progress = media_list[i]['progress']
+                                var is_keyframe = media_list[i]['is_keyframe']
+                                var keyframe_progress = media_list[i]['keyframe_progress']
+                                var keyframe_status = media_list[i]['keyframe_status']
+                                data = data + '<tr> <td class="center"> <label class="position-relative"> <input type="checkbox" class="ace" name="media" value="'+media_id+'"/> <span class="lbl"></span> </label> </td> <td class="media_id">'+ media_id + '</td> ' +
+                                    '<td class="external_id"><input value="'+external_id+'" style="display: none;width: 70px" ><span style="display: block">'+ external_id + '</span></td>' +
+                                    ' <td class="external_system"><input value="'+external_system+'" style="display: none;width: 70px"><span style="display: block">'+external_system+'</span></td> ' +
+                                    '<td class="medianame"><input value="'+name +'" style="display: none;width: 70px"><span style="display: block">'+name +'</span></td>' +
+                                    '<td>'+ file_url + '</td> <td>'+ video_format + '</td> <td>'+ size + '</td> <td>'+ video_length + '</td><td>'+ file_path + '</td><td class="progress">'+progress+'</td>  <td class="status">'+ media_status + '</td>' +
+                                    '<td class="btnchange"><button >修改</button></td> ' +
+                                    '<td class="keyframeprogress">'+keyframe_progress+'</td><td class="keyframestatus" >'+keyframe_status+'</td><td class="keyframe"> <a href="keyframetask/?media_id='+media_id+'">查看</a></td></tr>'
+                        }
+                        box.innerHTML = data
+                        }else {
+                            var val = resp.val
+                            alert(val)
+                        }
+
+                    }
+                })
+                }
+
+            }
+            function delmedia() {
+                 var media_array= new Array()
+                $('input[name="media"]:checked').each(function () {
+                    media_array.push($(this).val())
+                })
+            var data = {
+                'val':JSON.stringify(media_array),
+                }
+            if(media_array.length>0){
+                $.ajax({
+                url:'/video/delvideo',
+                type:'post',
+                data:data,
+                dataType: 'json',
+                    success:function (resp){
+                    if(resp.ret==0){
+                         window.location.href="/video/videoadmin";
+                    }
+                    }
+                })
+            }else {
+                alert('Choose Video')
+            }
+            }
+
+            function keyframe() {
+                 var media_array= new Array()
+                $('input[name="media"]:checked').each(function () {
+                    media_array.push($(this).val())
+                })
+            var data = {
+                'val':JSON.stringify(media_array),
+                }
+            if(media_array.length>0){
+                $.ajax({
+                url:'/video/keyframetask',
+                type:'post',
+                data:data,
+                dataType: 'json',
+                    success:function (resp){
+                    if(resp.ret==0){
+                         window.location.href="/video/videoadmin";
+                    }
+                    }
+                })
+            }else {
+                alert('Choose Video')
+            }
+            }
+
+            function changemedia() {
+                $('.external_id').each(function () {
+                    var input = $(this).children('input')
+                    var span = $(this).children('span')
+                    input.css('display','block')
+                    span.css('display','none')
+                })
+                $('.external_system').each(function () {
+                    var input = $(this).children('input')
+                    var span = $(this).children('span')
+                    input.css('display','block')
+                    span.css('display','none')
+                })
+                $('.medianame').each(function () {
+                    var input = $(this).children('input')
+                    var span = $(this).children('span')
+                    input.css('display','block')
+                    span.css('display','none')
+                })
+                $('.btnchange').each(function (){
+                    var _this = $(this)
+                        $(this).children('button').on('click',function () {
+                            var media_id = _this.siblings('.center').find('input').val()
+                            var external_id = _this.siblings('.external_id').children('input').val()
+                            var external_system = _this.siblings('.external_system').children('input').val()
+                            var media_name = _this.siblings('.medianame').children('input').val()
+                            data = {
+                                'media_id':media_id,
+                                'external_id':external_id,
+                                'external_system':external_system,
+                                'media_name':media_name,
+                            }
+                            $.ajax({
+                            url:'/video/changevideo',
+                            type:'post',
+                            data:data,
+                            dataType: 'json',
+                                success:function (resp){
+                                if(resp.ret==0){
+                                      window.location.href="/video/videoadmin";
+                                }else {
+                                    alert(resp.val)
+                                }
+                                }
+                            })
+                        })
+                    })
+                }
+function fresh() {
+    $.ajax({
+            url:'/video/videoadmin',
+                type:'post',
+                data:"",
+                dataType: 'json',
+                success:function (resp){
+                if(resp.ret==0){
+                    var media_id = resp.val.media_id
+                    var progress = resp.val.progress
+                    $('.media_id').each(function () {
+                        if($(this).text()==media_id){
+                            var this_ = $(this)
+                            this_.siblings('.progress')[0].innerHTML = progress;
+                            if(this_.siblings('.progress').text()=='100.0%'){
+
+                            this_.siblings('.status')[0].innerHTML = '上传成功';
+                            }else {}
+                        }
+                    })
+                }
+            }
+        })
+}
+
+$('.status').each(function () {
+    var this_ = $(this)
+    if(this_.text()!='上传成功'){
+        setInterval(fresh, 2000);
+    }
+})
+function keyframefresh() {
+                
+    $.ajax({
+        url:'/video/videoadmin',
+            type:'post',
+            data:"",
+            dataType: 'json',
+            success:function (resp){
+            if(resp.ret==0){
+                var media_id = resp.val.media_id
+                var keyframeprogress = resp.val.keyframe_progress
+                var keyframestatus = resp.val.keyframe_status
+                $('.media_id').each(function () {
+                    if($(this).text()==media_id){
+                        console.log(media_id)
+                        var this_ = $(this)
+                        this_.siblings('.keyframeprogress')[0].innerHTML = keyframeprogress;
+                        this_.siblings('.keyframestatus')[0].innerHTML = keyframestatus;
+                        if(this_.siblings('.keyframeprogress').text()=='100.0%'){
+                        setTimeout(function(){window.location.reload();},2000);
+                        }else {}
+            }
+        })
+    }
+}
+})
+}
+$('.keyframestatus').each(function () {
+    var this_ = $(this)
+    if(this_.text()=='检测中'|| this_.text()=='准备检测'){
+        setInterval(keyframefresh, 2000);
+    }
+})
+            </script>
+        {% endblock %}
+	</body>
+</html>

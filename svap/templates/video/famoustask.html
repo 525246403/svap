@@ -1,0 +1,221 @@
+{% extends 'video/base.html' %}
+{% load static %}
+{% block headblock %}
+   <link rel="stylesheet" href="{% static '/video/css/theme.css' %}" />
+    <link rel="stylesheet" href="{% static '/video/css/ace-fonts.css' %}"/>
+    <link rel="stylesheet" href="{% static '/video/css/jquery.pagination.css' %}">
+    <script type="text/javascript" src="{% static '/video/js/jquery-3.1.1.min.js' %}"></script>
+
+    <style type="text/css">
+        .img-div {
+            margin-top: 5px;
+            height: 150px;
+            float: left;
+            line-height: 1;
+            margin-left: 5px;
+            overflow: hidden;
+        }
+    </style>
+{% endblock %}
+{% block breadcrub %}
+    <li>
+        <a href="javascript:void(0)">娱乐明星识别</a>
+    </li>
+{% endblock %}
+{% block bodyblock %}
+    <div class="col-xs-12">
+        <div class="row" style="border: 0.5px #008CD4 solid;height:560px">
+        <div style="float: left;width: 250px">
+            <table width="100%" class="CSSearchTbl" cellpadding="0" cellspacing="0" style="margin-top: 20px;">
+            <tr>
+                <td>
+                    <span style="margin-left: 10px;">目标名字 <input type="text" size="16"  id="famousname" onkeyup="myFunction()"/></span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                <div class="left_nav">
+                <ul>
+                    <li>
+                        <div class="t"><i></i><a href="#">娱乐明星</a></div>
+                        <div class="txt" id="f-fmaous" style="overflow: auto;height: 400px;width: 200px">
+                            {% for famous in famous_list %}
+                                <p><a data-famousid="{{ famous.id }}">{{ famous.name }}</a></p>
+                            {% endfor %}
+                        </div>
+                    </li>
+                </ul>
+                </div>
+                </td>
+            </tr>
+            </table>
+        </div>
+        <div id="famousdata" style="float: right;width: 1400px"></div>
+        </div>
+        <div class="row" style="border-left: 0.5px #008CD4 solid;border-right: 0.5px #008CD4 solid;border-bottom: 0.5px #008CD4 solid;height:150px">
+              <table width="100%" class="CSSearchTbl" cellpadding="0" cellspacing="0" style="margin-top: 20px">
+                <tr>
+                    <td>
+                        <button class="btn btn-primary" data-dismiss="modal" style="width: 300px;margin-left: 50px;" onclick="getvideo()">
+                        选择视频
+                        </button>
+                    </td>
+                    <td style="left: 100px">视频ID&nbsp&nbsp&nbsp&nbsp   <input type="text" size="16"  id="videoid"/></td>
+                </tr>
+            </table>
+            <table width="100%" class="table table-striped table-bordered table-hover" style="display: none; border: 0 solid #ddd;margin-left: 10px;margin-top: 5px" id="mediadata">
+
+            </table>
+        </div>
+        <div style="border-left: 0.5px #008CD4 solid;border-right: 0.5px #008CD4 solid;border-bottom: 0.5px #008CD4 solid;height:100px;" class="row">
+            <table width="100%" class="CSSearchTbl" cellpadding="0" cellspacing="0">
+            <button class="btn btn-primary pull-left col-sm-12 tbl-search" data-dismiss="modal" style="width: 100px;margin: 20px 500px 20px 100px" onclick="gettask()">
+                添加
+            </button>
+            <button class="btn pull-left col-sm-12 tbl-search" data-dismiss="modal"  style="width: 100px;margin: 20px 300px 20px 500px" onclick="clearall()">
+                取消
+            </button>
+            </table>
+        </div>
+    </div>
+
+{% endblock %}
+{% block scriptblock %}
+    <script type="text/javascript">
+    $(".left_nav li .t i").click(function(){
+    $(this).parent(".t").toggleClass("hover");
+    $(this).parent(".t").next(".txt").slideToggle();
+});
+    function myFunction() {
+          // 声明变量
+          var input, filter, div, a, td, i;
+          input = document.getElementById("famousname");
+          filter = input.value.toUpperCase();
+          div = $("#f-fmaous");
+          a = div.find('a');
+
+          // 循环表格每一行，查找匹配项
+          for (i = 0; i < a.length; i++) {
+            if(filter==null||filter==undefined||filter==""){
+                $(a[i]).parent().css('display','block');
+        }else {
+            td=a[i].innerHTML;
+            if (td.toUpperCase().indexOf(filter) > -1) {
+            $(a[i]).parent().css('display','block');
+            $(".t").addClass("hover");
+            div.slideDown()
+            }
+            else {
+            $(a[i]).parent().css('display','none');
+            }
+        }
+            }
+        };
+    function getvideo() {
+        var videoid =  $('#videoid').val()
+        var data = {
+            'val': videoid
+        }
+        $.ajax({
+                url:'/video/getvideo',
+                type:'post',
+                data:data,
+                dataType: 'json',
+                    success:function (resp){
+                    if(resp.ret==0){
+                        $('#mediadata').css('display','block')
+                        var media_id = resp.val['media_id']
+                        var external_id = resp.val['external_id']
+                        var external_system = resp.val['external_system']
+                        var name = resp.val['name']
+                        var file_url = resp.val['file_url']
+                        var video_format = resp.val['video_format']
+                        var size = resp.val['size']
+                        var video_length = resp.val['video_length']
+                        var file_path = resp.val['file_path']
+                        console.log(media_id)
+                         var box=document.getElementById("mediadata");
+                         data = '<thead> <tr> <th>视频ID</th> <th>外部ID</th> <th>外部系统</th> <th>名称</th> <th>访问url</th> <th>格式</th> <th>大小</th> <th>时长</th> <th>本地地址</th>  </tr> </thead>' +
+                             '<tbody> <tr> <td>'+media_id+'</td> <td>'+external_id+'</td> <td>'+external_system+'</td> <td>'+name+'</td> <td>'+file_url+'</td> <td>'+video_format+'</td> <td>'+size+'</td> <td>'+video_length+'</td> <td>'+file_path+'</td> </tr> </tbody>'
+                        box.innerHTML = data
+                        }else {alert(resp.val)}
+
+                    }
+                })
+        }
+    $(function () {
+            $(".left_nav li a").click(function () {
+                var this_ = $(this)
+                famousname = this_.data('famousid')
+                getfamous(famousname)
+            })
+        })
+    function getfamous(famousname) {
+
+            var data = {
+                'val': famousname
+            };
+            $.ajax({
+                url:'/video/getfamous',
+                type:'post',
+                data:data,
+                dataType: 'json',
+                    success:function (resp){
+                    if(resp.ret==0){
+                        var famous_list = JSON.parse(resp.val);
+                        var box=document.getElementById("famousdata");
+                        var div=document.createElement("div");
+                        var data = '';
+                        for (var i = 0; i < famous_list.length; i++) {
+                                var id = famous_list[i]['id']
+                                var name = famous_list[i]['name']
+                                var url = famous_list[i]['url']
+                                data = data + '<div class="img-div"> <p style="text-align: center;margin-bottom: 1px" data-x="'+id +'">'+name+'</p> <img style="width:120px;height:120px;" src="'+url+'"/> <div  style="position:relative;z-index:1000;top: -25px"> <input class="box" type="checkbox" style="width: 20px;height: 20px" value="'+id+'" name="checkbox"> </div> </div>'
+                        }
+                        div.innerHTML = data
+                        box.appendChild(div)
+                    }else {
+                        if(resp.ret==2) {
+                        window.location.href="/video/newtask";
+                    }else {
+                         alert(resp.val)
+                        }
+                        }
+                }})
+    }
+    function gettask() {
+        var videoid =  $('#videoid').val()
+        var famous_list = new Array()
+        $(".img-div :checkbox").each(function(){
+            if($(this).prop("checked")){
+                var famous_id = $(this).val()
+                famous_list.push(famous_id)
+            }
+        });
+        var data = {
+            'videoid': videoid,
+            'famous_list': JSON.stringify(famous_list)
+        }
+        $.ajax({
+            url:'/video/videotask',
+                type:'post',
+                data:data,
+                dataType: 'json',
+                success:function (resp){
+                if(resp.ret==0){
+                    window.location.href="/video/targetrec";
+                }else {
+                    alert(resp.val)
+                }
+            }
+        })
+    }
+    function clearall() {
+        $(".img-div :checkbox").each(function(){
+            $(this).prop("checked",false);
+        });
+        localStorage.clear()
+        location.reload()
+    }
+    </script>
+{% endblock %}
